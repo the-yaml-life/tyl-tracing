@@ -1,6 +1,7 @@
 use tyl_tracing::{Environment, SimpleTracer, TraceConfig, TracingManager};
+use tyl_errors::TylError;
 
-fn main() -> Result<(), tyl_tracing::TracingError> {
+fn main() -> Result<(), tyl_errors::TylError> {
     println!("=== TYL Tracing Basic Usage ===\n");
 
     // Basic usage example
@@ -18,7 +19,7 @@ fn main() -> Result<(), tyl_tracing::TracingError> {
     Ok(())
 }
 
-fn basic_usage_example() -> Result<(), tyl_tracing::TracingError> {
+fn basic_usage_example() -> Result<(), tyl_errors::TylError> {
     println!("--- Basic Usage ---");
 
     let config = TraceConfig::new("example-service");
@@ -42,7 +43,7 @@ fn basic_usage_example() -> Result<(), tyl_tracing::TracingError> {
     Ok(())
 }
 
-fn custom_config_example() -> Result<(), tyl_tracing::TracingError> {
+fn custom_config_example() -> Result<(), tyl_errors::TylError> {
     println!("--- Custom Configuration ---");
 
     let config = TraceConfig::new("custom-service")
@@ -72,7 +73,7 @@ fn custom_config_example() -> Result<(), tyl_tracing::TracingError> {
     Ok(())
 }
 
-fn span_hierarchy_example() -> Result<(), tyl_tracing::TracingError> {
+fn span_hierarchy_example() -> Result<(), tyl_errors::TylError> {
     println!("--- Span Hierarchy ---");
 
     let tracer = SimpleTracer::new(TraceConfig::new("hierarchy-service"));
@@ -126,7 +127,7 @@ fn span_hierarchy_example() -> Result<(), tyl_tracing::TracingError> {
     Ok(())
 }
 
-fn baggage_example() -> Result<(), tyl_tracing::TracingError> {
+fn baggage_example() -> Result<(), tyl_errors::TylError> {
     println!("--- Baggage (Context Propagation) ---");
 
     let tracer = SimpleTracer::new(TraceConfig::new("baggage-service"));
