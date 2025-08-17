@@ -19,7 +19,7 @@
 //! // Basic usage
 //! let config = TraceConfig::new("my-service");
 //! let tracer = SimpleTracer::new(config);
-//! 
+//!
 //! let span_id = tracer.start_span("user_operation", None)?;
 //! // ... do work ...
 //! tracer.end_span(span_id)?;
@@ -31,7 +31,7 @@
 //! This module follows hexagonal architecture:
 //!
 //! - **Port (Interface)**: `TracingManager` - defines the tracing contract
-//! - **Adapters**: 
+//! - **Adapters**:
 //!   - `SimpleTracer` - In-memory tracing for development
 //!   - `OpenTelemetryTracer` - Production tracing with OTLP (optional)
 //! - **Domain Logic**: Span management and correlation
@@ -46,9 +46,9 @@ pub mod span;
 pub mod tracer;
 
 // Re-exports for public API
-pub use config::{TraceConfig, Environment};
-pub use span::{Span, SpanStatus, generate_span_id, generate_trace_id};
-pub use tracer::{TracingManager, SimpleTracer, TracingResult};
+pub use config::{Environment, TraceConfig};
+pub use span::{generate_span_id, generate_trace_id, Span, SpanStatus};
+pub use tracer::{SimpleTracer, TracingManager, TracingResult};
 
 #[cfg(test)]
 mod tests {
@@ -75,13 +75,15 @@ mod tests {
     fn test_simple_tracer_basic_functionality() {
         let config = TraceConfig::new("test-service");
         let tracer = SimpleTracer::new(config);
-        
+
         let span_id = tracer.start_span("user_action", None).unwrap();
         assert!(!span_id.is_empty());
-        
-        tracer.add_span_attribute(&span_id, "user_id", serde_json::json!("user123")).unwrap();
+
+        tracer
+            .add_span_attribute(&span_id, "user_id", serde_json::json!("user123"))
+            .unwrap();
         tracer.end_span(span_id).unwrap();
-        
+
         let completed_spans = tracer.get_completed_spans();
         assert_eq!(completed_spans.len(), 1);
         assert_eq!(completed_spans[0].operation_name, "user_action");
@@ -93,7 +95,7 @@ mod tests {
             .with_environment(Environment::Production)
             .with_sampling_rate(0.5)
             .with_max_spans(500);
-            
+
         assert_eq!(config.service_name, "test-service");
         assert_eq!(config.environment, Environment::Production);
         assert_eq!(config.sampling_rate, 0.5);
@@ -103,10 +105,10 @@ mod tests {
     #[test]
     fn test_baggage_operations() {
         let tracer = SimpleTracer::default();
-        
+
         tracer.set_baggage("request_id", "req123");
         tracer.set_baggage("user_id", "user456");
-        
+
         assert_eq!(tracer.get_baggage("request_id"), Some("req123".to_string()));
         assert_eq!(tracer.get_baggage("user_id"), Some("user456".to_string()));
         assert_eq!(tracer.get_baggage("nonexistent"), None);
@@ -115,24 +117,27 @@ mod tests {
     #[test]
     fn test_invalid_span_operations() {
         let tracer = SimpleTracer::default();
-        
+
         let result = tracer.end_span("invalid_span_id".to_string());
         assert!(result.is_err());
-        
-        let result = tracer.add_span_attribute("invalid_span_id", "key", serde_json::json!("value"));
+
+        let result =
+            tracer.add_span_attribute("invalid_span_id", "key", serde_json::json!("value"));
         assert!(result.is_err());
     }
 
     #[test]
     fn test_span_hierarchy() {
         let tracer = SimpleTracer::default();
-        
+
         let parent_span_id = tracer.start_span("parent_operation", None).unwrap();
-        let child_span_id = tracer.start_span("child_operation", Some(parent_span_id.clone())).unwrap();
-        
+        let child_span_id = tracer
+            .start_span("child_operation", Some(parent_span_id.clone()))
+            .unwrap();
+
         tracer.end_span(child_span_id).unwrap();
         tracer.end_span(parent_span_id).unwrap();
-        
+
         let completed_spans = tracer.get_completed_spans();
         assert_eq!(completed_spans.len(), 2);
     }
@@ -141,13 +146,15 @@ mod tests {
     fn test_max_spans_limit() {
         let config = TraceConfig::new("test-service").with_max_spans(2);
         let tracer = SimpleTracer::new(config);
-        
+
         // Create 3 spans, should only keep 2
         for i in 0..3 {
-            let span_id = tracer.start_span(&format!("operation_{}", i), None).unwrap();
+            let span_id = tracer
+                .start_span(&format!("operation_{}", i), None)
+                .unwrap();
             tracer.end_span(span_id).unwrap();
         }
-        
+
         let completed_spans = tracer.get_completed_spans();
         assert_eq!(completed_spans.len(), 2);
         // Should keep the last 2 spans
@@ -158,6 +165,9 @@ mod tests {
     #[test]
     fn test_environment_detection() {
         let env = Environment::from_env();
-        assert!(matches!(env, Environment::Development | Environment::Production | Environment::Testing));
+        assert!(matches!(
+            env,
+            Environment::Development | Environment::Production | Environment::Testing
+        ));
     }
 }

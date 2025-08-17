@@ -32,17 +32,17 @@ impl TraceConfig {
             max_spans: 1000,
         }
     }
-    
+
     pub fn with_environment(mut self, environment: Environment) -> Self {
         self.environment = environment;
         self
     }
-    
+
     pub fn with_sampling_rate(mut self, rate: f64) -> Self {
         self.sampling_rate = rate.clamp(0.0, 1.0);
         self
     }
-    
+
     pub fn with_max_spans(mut self, max_spans: usize) -> Self {
         self.max_spans = max_spans;
         self
@@ -63,7 +63,10 @@ impl ConfigPlugin for TraceConfig {
             return Err(TylError::validation("service_name", "cannot be empty"));
         }
         if !(0.0..=1.0).contains(&self.sampling_rate) {
-            return Err(TylError::validation("sampling_rate", "must be between 0.0 and 1.0"));
+            return Err(TylError::validation(
+                "sampling_rate",
+                "must be between 0.0 and 1.0",
+            ));
         }
         if self.max_spans == 0 {
             return Err(TylError::validation("max_spans", "must be greater than 0"));
@@ -79,8 +82,8 @@ impl ConfigPlugin for TraceConfig {
 
     fn merge_env(&mut self) -> ConfigResult<()> {
         // TYL_SERVICE_NAME or SERVICE_NAME
-        if let Ok(service_name) = std::env::var("TYL_SERVICE_NAME")
-            .or_else(|_| std::env::var("SERVICE_NAME"))
+        if let Ok(service_name) =
+            std::env::var("TYL_SERVICE_NAME").or_else(|_| std::env::var("SERVICE_NAME"))
         {
             self.service_name = service_name;
         }
@@ -89,28 +92,35 @@ impl ConfigPlugin for TraceConfig {
         if let Ok(rate_str) = std::env::var("TYL_TRACE_SAMPLING_RATE")
             .or_else(|_| std::env::var("TRACE_SAMPLING_RATE"))
         {
-            self.sampling_rate = rate_str.parse::<f64>()
+            self.sampling_rate = rate_str
+                .parse::<f64>()
                 .map_err(|e| TylError::configuration(format!("invalid sampling rate: {}", e)))?
                 .clamp(0.0, 1.0);
         }
 
         // TYL_TRACE_MAX_SPANS or TRACE_MAX_SPANS
-        if let Ok(max_str) = std::env::var("TYL_TRACE_MAX_SPANS")
-            .or_else(|_| std::env::var("TRACE_MAX_SPANS"))
+        if let Ok(max_str) =
+            std::env::var("TYL_TRACE_MAX_SPANS").or_else(|_| std::env::var("TRACE_MAX_SPANS"))
         {
-            self.max_spans = max_str.parse::<usize>()
+            self.max_spans = max_str
+                .parse::<usize>()
                 .map_err(|e| TylError::configuration(format!("invalid max spans: {}", e)))?;
         }
 
         // TYL_ENVIRONMENT or ENVIRONMENT
-        if let Ok(env_str) = std::env::var("TYL_ENVIRONMENT")
-            .or_else(|_| std::env::var("ENVIRONMENT"))
+        if let Ok(env_str) =
+            std::env::var("TYL_ENVIRONMENT").or_else(|_| std::env::var("ENVIRONMENT"))
         {
             self.environment = match env_str.to_lowercase().as_str() {
                 "development" | "dev" => Environment::Development,
                 "production" | "prod" => Environment::Production,
                 "test" | "testing" => Environment::Testing,
-                _ => return Err(TylError::configuration(format!("invalid environment: {}", env_str))),
+                _ => {
+                    return Err(TylError::configuration(format!(
+                        "invalid environment: {}",
+                        env_str
+                    )))
+                }
             };
         }
 

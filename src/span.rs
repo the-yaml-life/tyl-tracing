@@ -1,6 +1,6 @@
 //! Span management module
 //!
-//! Contains the Span struct, SpanStatus enum, and related functionality for 
+//! Contains the Span struct, SpanStatus enum, and related functionality for
 //! managing distributed tracing spans.
 
 use serde::{Deserialize, Serialize};
@@ -36,7 +36,7 @@ impl Span {
             .as_ref()
             .map(|_| generate_trace_id()) // In real implementation, inherit from parent
             .unwrap_or_else(generate_trace_id);
-            
+
         Self {
             span_id,
             trace_id,
@@ -48,20 +48,20 @@ impl Span {
             status: SpanStatus::Active,
         }
     }
-    
+
     pub fn duration_ms(&self) -> Option<u64> {
         self.end_time.map(|end| end.saturating_sub(self.start_time))
     }
-    
+
     pub fn is_active(&self) -> bool {
         matches!(self.status, SpanStatus::Active)
     }
-    
+
     pub fn complete(&mut self) {
         self.end_time = Some(current_timestamp());
         self.status = SpanStatus::Completed;
     }
-    
+
     pub fn error(&mut self, message: String) {
         self.end_time = Some(current_timestamp());
         self.status = SpanStatus::Error { message };
