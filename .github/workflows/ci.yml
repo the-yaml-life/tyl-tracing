@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.rust }}
+        components: rustfmt, clippy
+    
+    - uses: Swatinem/rust-cache@v2
+    
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+      if: matrix.rust == 'stable'
+    
+    - name: Run clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+      if: matrix.rust == 'stable'
+    
+    - name: Run tests
+      run: cargo test --verbose
+    
+    - name: Run doc tests
+      run: cargo test --doc --verbose
+    
+    - name: Test examples
+      run: |
+        cargo run --example basic_usage
+        # Add more examples as needed
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: rustsec/audit-check@v1.4.1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
