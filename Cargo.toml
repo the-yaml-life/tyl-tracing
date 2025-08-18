@@ -14,8 +14,8 @@ categories = ["development-tools", "rust-patterns"]
 
 [dependencies]
 # TYL Framework dependencies
-tyl-errors = { path = "../tyl-errors" }
-tyl-config = { path = "../tyl-config" }
+tyl-errors = { git = "https://github.com/the-yaml-life/tyl-errors" }
+tyl-config = { git = "https://github.com/the-yaml-life/tyl-config" }
 
 # Common dependencies
 serde = { version = "1.0", features = ["derive"] }
