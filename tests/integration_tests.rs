@@ -1,5 +1,5 @@
-use tyl_tracing::{Environment, SimpleTracer, TraceConfig, TracingManager};
 use tyl_errors::TylError;
+use tyl_tracing::{Environment, SimpleTracer, TraceConfig, TracingManager};
 
 #[test]
 fn test_end_to_end_tracing() {
@@ -126,17 +126,11 @@ fn test_error_handling_integration() {
     // Test invalid span operations
     let result = tracer.end_span("non_existent_span".to_string());
     assert!(result.is_err());
-    assert!(matches!(
-        result.unwrap_err(),
-        TylError::Validation { .. }
-    ));
+    assert!(matches!(result.unwrap_err(), TylError::Validation { .. }));
 
     let result = tracer.add_span_attribute("non_existent_span", "key", serde_json::json!("value"));
     assert!(result.is_err());
-    assert!(matches!(
-        result.unwrap_err(),
-        TylError::Validation { .. }
-    ));
+    assert!(matches!(result.unwrap_err(), TylError::Validation { .. }));
 
     // Test that valid operations still work after errors
     let span_id = tracer.start_span("valid_operation", None).unwrap();

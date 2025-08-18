@@ -1,5 +1,5 @@
-use tyl_tracing::{Environment, SimpleTracer, TraceConfig, TracingManager};
 use tyl_errors::TylError;
+use tyl_tracing::{Environment, SimpleTracer, TraceConfig, TracingManager};
 
 fn main() -> Result<(), tyl_errors::TylError> {
     println!("=== TYL Tracing Basic Usage ===\n");
